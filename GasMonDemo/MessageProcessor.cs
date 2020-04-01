@@ -30,7 +30,6 @@ namespace GasMonDemo
             foreach (var message in readingMessages)
             {
                 Console.WriteLine(message.Reading);
-                _sqsService.DeleteMessageAsync(queueUrl, message.ReceiptHandle).Wait();
             }
         }
     }

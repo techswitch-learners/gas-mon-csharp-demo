@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Amazon.SQS;
 using Amazon.SQS.Model;
@@ -34,12 +36,28 @@ namespace GasMonDemo
                 MaxNumberOfMessages = 10
             };
             var response = await _sqsClient.ReceiveMessageAsync(request);
-            return response.Messages;
+            var messages = response.Messages;
+            await DeleteMessagesAsync(queueUrl, messages);
+            return messages;
         }
 
-        public async Task DeleteMessageAsync(string queueUrl, string receiptHandle)
+        private async Task DeleteMessagesAsync(string queueUrl, IEnumerable<Message> messages)
         {
-            await _sqsClient.DeleteMessageAsync(queueUrl, receiptHandle);
+            var deleteEntries = messages
+                .Select(m => 
+                    new DeleteMessageBatchRequestEntry
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        ReceiptHandle = m.ReceiptHandle
+                    }
+                ).ToList();
+            
+            var request = new DeleteMessageBatchRequest
+            {
+                QueueUrl = queueUrl,
+                Entries = deleteEntries
+            };
+            await _sqsClient.DeleteMessageBatchAsync(request);
         }
     }
 }
