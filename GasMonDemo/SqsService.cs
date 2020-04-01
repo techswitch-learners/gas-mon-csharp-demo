@@ -16,7 +16,7 @@ namespace GasMonDemo
 
         public async Task<string> CreateQueueAsync()
         {
-            var response = await _sqsClient.CreateQueueAsync("MikesGasMonitoringQueue");
+            var response = await _sqsClient.CreateQueueAsync("MikesGasMonitoringQueue1");
             return response.QueueUrl;
         }
 

@@ -16,9 +16,15 @@ namespace GasMonDemo
             var locationsFetcher = new LocationsFetcher(s3Client);
             var sqsService = new SqsService(sqsClient);
             var snsService = new SnsService(snsClient, sqsClient);
-            var processor = new MessageProcessor(sqsService);
+            var messageParser = new MessageParser();
 
             var locations = locationsFetcher.FetchLocations();
+            
+            var locationChecker = new LocationChecker(locations);
+            var duplicateChecker = new DuplicateChecker();
+
+            var processor = new MessageProcessor(sqsService, messageParser, locationChecker, duplicateChecker);
+
 
             using (var queue = new SubscribedQueue(sqsService, snsService))
             {
